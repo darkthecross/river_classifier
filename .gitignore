@@ -1,2 +1,4 @@
-/data/*
-/.idea/*
+data/*
+.idea/*
+preview/
+formatted_data/
