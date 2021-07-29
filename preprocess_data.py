@@ -22,6 +22,11 @@ def main():
                 dc[row[0]] = row[1]
                 if not row[1] in cat:
                     cat.append(row[1])
+
+    # There are some images which are not recognizable in tf.
+    bad_list = ["cELTM.jpg", "ChxbM.jpg", "CnGVg.jpg", "Ksebf.jpg", "LjFyd.jpg", "Lxulv.jpg", "MqotO.jpg", "NhvrR.jpg",
+                "qmzFQ.jpg", "THovD.jpg", "TuPQk.jpg", "uHjEZ.jpg", "TMkCF.jpg"]
+
     # Clean formatted_data/
     dirs = os.scandir()
     for d in dirs:
@@ -36,8 +41,11 @@ def main():
     for i in images:
         if i not in dc:
             raise Exception("Image " + i + " unlabelled!")
-        image_category = dc[i]
-        shutil.copy("data/train_data/train_image/"+i, "formatted_data/"+image_category+"/"+i)
+        if i in bad_list:
+            print("Excluded " + i)
+        else:
+            image_category = dc[i]
+            shutil.copy("data/train_data/train_image/" + i, "formatted_data/" + image_category + "/" + i)
 
 
 if __name__ == "__main__":
