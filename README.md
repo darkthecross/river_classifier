@@ -46,7 +46,7 @@ python3 train.py
 
 This takes ~30min on a modern desktop CPU (Ryzen9 5950x) or 4min on a modern desktop GPU (RTX 3090).
 
-[!img](dev/fine_tune.png)
+![img](dev/fine_tune.png)
 
 We can get ~70% accuracy on validation set -- note, we are almost over-fitting on training set. We should probably consider data augmentation.
 
