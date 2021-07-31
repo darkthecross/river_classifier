@@ -25,7 +25,7 @@ def main():
 
     # There are some images which are not recognizable in tf.
     bad_list = ["cELTM.jpg", "ChxbM.jpg", "CnGVg.jpg", "Ksebf.jpg", "LjFyd.jpg", "Lxulv.jpg", "MqotO.jpg", "NhvrR.jpg",
-                "qmzFQ.jpg", "THovD.jpg", "TuPQk.jpg", "uHjEZ.jpg", "TMkCF.jpg"]
+                "qmzFQ.jpg", "THovD.jpg", "TuPQk.jpg", "uHjEZ.jpg", "TMkCF.jpg", 'zYogd.jpg']
 
     # Clean formatted_data/
     dirs = os.scandir()

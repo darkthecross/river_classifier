@@ -2,3 +2,4 @@ data/*
 .idea/*
 preview/
 formatted_data/
+model/
