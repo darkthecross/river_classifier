@@ -10,7 +10,7 @@ from keras.preprocessing.image import ImageDataGenerator
 import matplotlib.pyplot as plt
 
 
-def plot_metric(history, metric):
+def plot_metric(history, metric, save_name):
     train_metrics = history.history[metric]
     val_metrics = history.history['val_' + metric]
     epochs = range(1, len(train_metrics) + 1)
@@ -20,60 +20,42 @@ def plot_metric(history, metric):
     plt.xlabel("Epochs")
     plt.ylabel(metric)
     plt.legend(["train_" + metric, 'val_' + metric])
-    plt.show()
+    plt.savefig(save_name)
 
 
-def get_data():
-    tf_training_dataset = tf.keras.preprocessing.image_dataset_from_directory(
-        "formatted_data",
-        labels="inferred",
-        label_mode="categorical",
-        class_names=None,
-        color_mode="rgb",
-        batch_size=32,
-        image_size=(256, 256),
-        shuffle=True,
-        seed=42,
+def get_data_gen():
+    train_data_gen = tf.keras.preprocessing.image.ImageDataGenerator(
+        rotation_range=10,
+        width_shift_range=0.1,
+        height_shift_range=0.1,
+        brightness_range=None,
+        shear_range=0.0,
+        zoom_range=0.1,
+        channel_shift_range=0.0,
+        fill_mode="nearest",
+        cval=0.0,
+        horizontal_flip=True,
         validation_split=0.1,
-        subset="training",
-        interpolation="nearest",
-        follow_links=False,
-        smart_resize=True
     )
 
-    tf_validation_dataset = tf.keras.preprocessing.image_dataset_from_directory(
-        "formatted_data",
-        labels="inferred",
-        label_mode="categorical",
-        class_names=None,
-        color_mode="rgb",
-        batch_size=32,
-        image_size=(256, 256),
-        shuffle=True,
-        seed=42,
-        validation_split=0.1,
-        subset="validation",
-        interpolation="nearest",
-        follow_links=False,
-        smart_resize=True
-    )
-
-    return tf_training_dataset, tf_validation_dataset
+    return train_data_gen
 
 
 def inspect_data():
-    train_data, validation_data = get_data()
-    b = train_data.batch(1)
-    numpy_data = b.as_numpy_iterator()
-    images = list(numpy_data)[0]
-    single_img = images[0][0, 1, :, :, :]
-    img = Image.fromarray(single_img, "RGB")
-    img.show()
+    train_data_gen = get_data_gen()
+    train_generator = train_data_gen.flow_from_directory("formatted_data", subset="training")
+    b = train_generator.next()
+    print(b)
+    # numpy_data = b.as_numpy_iterator()
+    # images = list(numpy_data)[0]
+    # single_img = images[0][0, 1, :, :, :]
+    # img = Image.fromarray(single_img, "RGB")
+    # img.show()
 
 
 def main():
     # os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-    tf_training_dataset, tf_validation_dataset = get_data()
+    train_data_gen = get_data_gen()
 
     base_model = InceptionV3(weights='imagenet', include_top=False)
 
@@ -97,9 +79,10 @@ def main():
     model.compile(optimizer='rmsprop', loss='categorical_crossentropy',
                   metrics=[tf.keras.metrics.CategoricalAccuracy()])
 
-    history = model.fit(tf_training_dataset, epochs=20, validation_data=tf_validation_dataset)
+    history = model.fit(train_data_gen.flow_from_directory("formatted_data", subset="training"), epochs=30,
+                        validation_data=train_data_gen.flow_from_directory("formatted_data", subset="validation"))
 
-    plot_metric(history, "categorical_accuracy")
+    plot_metric(history, "categorical_accuracy", "dev/pre_train.png")
 
     # at this point, the top layers are well trained and we can start fine-tuning
     # convolutional layers from inception V3. We will freeze the bottom N layers
@@ -120,11 +103,12 @@ def main():
     model.compile(optimizer=SGD(learning_rate=0.0001, momentum=0.9), loss='categorical_crossentropy',
                   metrics=[tf.keras.metrics.CategoricalAccuracy()])
 
-    history = model.fit(tf_training_dataset, epochs=50, validation_data=tf_validation_dataset)
+    history = model.fit(train_data_gen.flow_from_directory("formatted_data", subset="training"), epochs=60,
+                        validation_data=train_data_gen.flow_from_directory("formatted_data", subset="validation"))
 
-    plot_metric(history, "categorical_accuracy")
+    plot_metric(history, "categorical_accuracy", "dev/fine_tune.png")
 
-    model.save("model/river_classifier_model.tf")
+    # model.save("model/river_classifier_model.tf")
 
 
 if __name__ == "__main__":
