@@ -41,7 +41,7 @@ def main():
             print(i + ": " + str(predict.numpy()))
             dc[i] = str(predict.numpy())
 
-    with open('dev/test_data.csv', 'w', newline='') as csv_file:
+    with open('dev/test_data_new.csv', 'w', newline='') as csv_file:
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(['image_name', 'label'])
         for k in dc:
