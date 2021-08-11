@@ -8,7 +8,7 @@ import csv
 
 def main():
     # Let's see the accuracy on validation set.
-    model = load_model("model/river_classifier_model_NasNetLarge.tf")
+    model = load_model("model/river_classifier_model_InceptionResNetV2_smoothing.tf")
     tf_validation_dataset = tf.keras.preprocessing.image_dataset_from_directory(
         "formatted_data",
         labels="inferred",
@@ -41,7 +41,7 @@ def main():
             print(i + ": " + str(predict.numpy()))
             dc[i] = str(predict.numpy())
 
-    with open('dev/test_data_nas.csv', 'w', newline='') as csv_file:
+    with open('dev/test_data_inception.csv', 'w', newline='') as csv_file:
         csv_writer = csv.writer(csv_file)
         csv_writer.writerow(['image_name', 'label'])
         for k in dc:

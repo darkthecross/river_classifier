@@ -1,5 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras.applications.inception_resnet_v2 import InceptionResNetV2
+from tensorflow.keras.applications.nasnet import NASNetLarge
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import SGD, Adam
@@ -54,7 +54,7 @@ def main():
     # os.environ["CUDA_VISIBLE_DEVICES"] = "0"
     train_data_gen = get_data_gen()
 
-    base_model = InceptionResNetV2(weights='imagenet', include_top=False)
+    base_model = NASNetLarge(weights='imagenet', include_top=False)
 
     # add a global spatial average pooling layer
     x = base_model.output
@@ -74,11 +74,11 @@ def main():
                   metrics=[tf.keras.metrics.CategoricalAccuracy()])
 
     history = model.fit(train_data_gen.flow_from_directory("formatted_data", subset="training"),
-                        epochs=40,
+                        epochs=50,
                         validation_data=train_data_gen.flow_from_directory("formatted_data",
                                                                            subset="validation"))
 
-    plot_metric(history, "categorical_accuracy", "dev/pre_train.png")
+    plot_metric(history, "categorical_accuracy", "dev/nas_pre_train.png")
 
     # at this point, the top layers are well trained and we can start fine-tuning
     # convolutional layers from inception V3. We will freeze the bottom N layers
@@ -91,17 +91,17 @@ def main():
     # the first 249 layers and unfreeze the rest:
     for layer in model.layers:
         layer.trainable = True
-    model.compile(optimizer=SGD(learning_rate=0.0001, momentum=0.9), loss=CategoricalCrossentropy(label_smoothing=0.1),
+    model.compile(optimizer=SGD(learning_rate=1e-4, momentum=0.9), loss=CategoricalCrossentropy(label_smoothing=0.1),
                   metrics=[tf.keras.metrics.CategoricalAccuracy()])
 
     history = model.fit(train_data_gen.flow_from_directory("formatted_data", subset="training"),
-                        epochs=100,
+                        epochs=150,
                         validation_data=train_data_gen.flow_from_directory("formatted_data",
                                                                            subset="validation"))
 
-    plot_metric(history, "categorical_accuracy", "dev/fine_tune.png")
+    plot_metric(history, "categorical_accuracy", "dev/nas_fine_tune.png")
 
-    model.save("model/river_classifier_model_InceptionResNetV2_smoothing.tf")
+    model.save("model/river_classifier_model_nas.tf")
 
 
 if __name__ == "__main__":
